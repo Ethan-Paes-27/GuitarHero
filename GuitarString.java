@@ -12,47 +12,60 @@
 public class GuitarString {
 
     private RingBuffer buffer; // ring buffer
+    private double frequency;
+    private int tics = 0;
     // YOUR OTHER INSTANCE VARIABLES HERE
 
     // create a guitar string of the given frequency
     public GuitarString(double frequency) {
-        // YOUR CODE HERE
+        this.frequency = frequency; //NEEDS REVISIONS
+        buffer = new RingBuffer((int)frequency);
     }
 
     // create a guitar string with size & initial values given by the array
     public GuitarString(double[] init) {
-        // YOUR CODE HERE
+        this.frequency = 44100 / init.length; // NEEDS REVISIONS
+        buffer = new RingBuffer(init.length);
+        for (double value : init) {
+            buffer.enqueue(value);
+        }
     }
 
     // pluck the guitar string by replacing the buffer with white noise
     public void pluck() {
-        // YOUR CODE HERE
+        while (!buffer.isEmpty()) {
+            buffer.dequeue();
+        }
+        for (int i = 0; i < frequency; i++) {
+            buffer.enqueue(Math.random() - 0.5);
+        }
     }
 
     // advance the simulation one time step
     public void tic() {
-        // YOUR CODE HERE
+        tics++;
+
+        double first = buffer.dequeue();
+        double second = buffer.peek();
+        double newSample = 0.996 * 0.5 * (first + second);
+        buffer.enqueue(newSample);
     }
 
     // return the current sample
     public double sample() {
-        // YOUR CODE HERE
-
-        return 0.0; // dummy return statement so the code compiles
+        return buffer.peek();
     }
 
     // return number of times tic was called
     public int time() {
-        // YOUR CODE HERE
-
-        return 0; // dummy return statement so the code compiles
+        return tics;
     }
 
     public static void main(String[] args) {
-        int N = Integer.parseInt(args[0]);
+        int N = 10;
         double[] samples = {.2, .4, .5, .3, -.2, .4, .3, .0, -.1, -.3};
         GuitarString testString = new GuitarString(samples);
-        for (int i = 0; i < N; i++) {
+        for (int i = 0; i < N * 2; i++) {
             int t = testString.time();
             double sample = testString.sample();
             System.out.printf("%6d %8.4f\n", t, sample);

@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 /*************************************************************************
  * Name:
  *
@@ -10,35 +12,30 @@
  *****************************************************************************/
 
 public class RingBuffer {
-    private double[] rb;          // items in the buffer
+    private ArrayList<Double> rb;          // items in the buffer
     private int first;            // index for the next dequeue or peek
     private int last;             // index for the next enqueue
-    private int size;             // number of items in the buffer
+    private int capacity;             // number of items in the buffer
 
     // create an empty buffer, with given max capacity
     public RingBuffer(int capacity) {
-        // YOUR CODE HERE
+        rb = new ArrayList<>(capacity);
+        this.capacity = capacity;
     }
 
     // return number of items currently in the buffer
     public int size() {
-        // YOUR CODE HERE
-
-        return 0; // dummy return statement so the code compiles
+        return rb.size();
     }
 
     // is the buffer empty (size equals zero)?
     public boolean isEmpty() {
-        // YOUR CODE HERE
-
-        return false; // dummy return statement so the code compiles
+        return size() == 0;
     }
 
     // is the buffer full (size equals array capacity)?
     public boolean isFull() {
-        // YOUR CODE HERE
-
-        return false; // dummy return statement so the code compiles
+        return size() == capacity;
     }
 
     // add item x to the end
@@ -46,7 +43,8 @@ public class RingBuffer {
         if (isFull()) {
             throw new RuntimeException("Ring buffer overflow");
         }
-        // YOUR CODE HERE
+        
+        rb.add(x);
     }
 
     // delete and return item from the front
@@ -54,9 +52,8 @@ public class RingBuffer {
         if (isEmpty()) {
             throw new RuntimeException("Ring buffer underflow");
         }
-        // YOUR CODE HERE
-
-        return 0.0; // dummy return statement so the code compiles
+        
+        return rb.remove(0);
     }
 
     // return (but do not delete) item from the front
@@ -64,14 +61,13 @@ public class RingBuffer {
         if (isEmpty()) {
             throw new RuntimeException("Ring buffer underflow");
         }
-        // YOUR CODE HERE
-
-        return 0.0; // dummy return statement so the code compiles
+        
+        return rb.get(0);
     }
 
     // a simple test of the constructor and methods in RingBuffer
     public static void main(String[] args) {
-        int N = Integer.parseInt(args[0]);
+        int N = 6;
         RingBuffer buffer = new RingBuffer(N);
         for (int i = 1; i <= N; i++) {
             buffer.enqueue(i);

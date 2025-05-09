@@ -19,10 +19,9 @@ public class GuitarHeroLite {
         GuitarString stringA = new GuitarString(CONCERT_A);
         GuitarString stringC = new GuitarString(CONCERT_C);
 
-
         // the main input loop
         while (true) {
-
+            StdAudio.play(10000);
             // check if the user has typed a key, and, if so, process it
             if (StdDraw.hasNextKeyTyped()) {
 
@@ -33,20 +32,22 @@ public class GuitarHeroLite {
                 if (key == 'a') {
                     stringA.pluck();
                 }
-                if (key == 'c') {
-                    stringC.pluck();
-                }
-            }
+                // if (key == 'c') {
+                //     stringC.pluck();
+                // }
+            
 
             // compute the superposition of the samples
-            double sample = stringA.sample() + stringC.sample();
+            double sample = stringA.sample()// + stringC.sample()
+            ;
 
             // send the result to standard audio
             StdAudio.play(sample);
 
             // advance the simulation of each guitar string by one step
             stringA.tic();
-            stringC.tic();
+            //stringC.tic();
+            }
         }
     }
 
