@@ -5,50 +5,52 @@
  *  to do.
  *
  *  Note: it won't compile until you fill in the constructors and methods
- *        (or at least commment out the ones whose return type is non-void).
+ *        (or at least comment out the ones whose return type is non-void).
  *
  *****************************************************************************/
 
 public class GuitarString {
 
     private RingBuffer buffer; // ring buffer
-    private double frequency;
-    private int tics = 0;
-    // YOUR OTHER INSTANCE VARIABLES HERE
+    private int ticCount; // number of times tic has been called
 
     // create a guitar string of the given frequency
     public GuitarString(double frequency) {
-        this.frequency = frequency; //NEEDS REVISIONS
-        buffer = new RingBuffer((int)frequency);
+        buffer = new RingBuffer((int)Math.ceil(44100/frequency));
+        while (!buffer.isFull()) {
+            buffer.enqueue(0.0);
+        }
     }
 
     // create a guitar string with size & initial values given by the array
     public GuitarString(double[] init) {
-        this.frequency = 44100 / init.length; // NEEDS REVISIONS
         buffer = new RingBuffer(init.length);
-        for (double value : init) {
-            buffer.enqueue(value);
+
+        for (double d : init) {
+            buffer.enqueue(d);
         }
     }
 
     // pluck the guitar string by replacing the buffer with white noise
     public void pluck() {
+        int size = buffer.size();
+
         while (!buffer.isEmpty()) {
             buffer.dequeue();
         }
-        for (int i = 0; i < frequency; i++) {
-            buffer.enqueue(Math.random() - 0.5);
+
+        for (int i = 0; i < size; i++) {
+            buffer.enqueue(0.5 - Math.random());
         }
     }
 
     // advance the simulation one time step
     public void tic() {
-        tics++;
-
         double first = buffer.dequeue();
         double second = buffer.peek();
-        double newSample = 0.996 * 0.5 * (first + second);
-        buffer.enqueue(newSample);
+
+        buffer.enqueue(0.994 * ((first + second) / 2.0));
+        ticCount++;
     }
 
     // return the current sample
@@ -58,14 +60,14 @@ public class GuitarString {
 
     // return number of times tic was called
     public int time() {
-        return tics;
+        return ticCount;
     }
 
     public static void main(String[] args) {
-        int N = 10;
+        int N = Integer.parseInt(args[0]);
         double[] samples = {.2, .4, .5, .3, -.2, .4, .3, .0, -.1, -.3};
         GuitarString testString = new GuitarString(samples);
-        for (int i = 0; i < N * 2; i++) {
+        for (int i = 0; i < N; i++) {
             int t = testString.time();
             double sample = testString.sample();
             System.out.printf("%6d %8.4f\n", t, sample);
