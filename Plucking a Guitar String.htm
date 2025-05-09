@@ -1,0 +1,666 @@
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<!-- saved from url=(0211)https://a349-142581945.cluster349.canvas-user-content.com/courses/2522763/files/142581945/course%20files/Plucking%20a%20Guitar%20String.htm?context_id=2522763&context_type=Course&download=1&id=142581945&inline=1 -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252"></head><body><li>Learn how to create user-defined data types in Java</li>
+    <li>Learn about digital audio</li>
+  
+<p></p>
+
+
+
+<p>
+</p><h2><b>Submission</b></h2> 
+Submit <tt>RingBuffer.java</tt>, <tt>GuitarString.java</tt>, <tt>GuitarHero.java</tt>,
+and a completed <a href="http://www.cis.upenn.edu/~cis110/13sp/hw/hw07/readme_guitar.txt">readme_guitar.txt</a>
+using the submission link on the left. Optional: Submit a fully
+functional GuitarHeroVisualizer.java for extra credit (described
+below).  If Your GuitarHeroVisualizer requires any additional files,
+you may submit them in a zip file named extra.zip.
+<p></p>
+
+<h2><b>Background</b></h2>
+
+<p>
+For this assignment, you will write a program to simulate plucking a guitar string using
+the <em>Karplus-Strong</em> algorithm. This algorithm played a seminal
+role in the emergence of physically modeled sound synthesis (in which 
+a physical description of a musical instrument is used to synthesize
+sound electronically).
+</p>
+
+
+<p>
+When a guitar string is plucked, the string vibrates and creates
+sound.  The length of the string determines its <em>fundamental
+frequency</em> of vibration.  We model a guitar string by sampling
+its <em>displacement</em> (a real number between -1/2 and +1/2)
+at <em>N</em> equally spaced points (in time), where <em>N</em> equals
+the <em>sampling rate</em> (44,100) divided by the fundamental
+frequency (rounding the quotient <em>up</em> to the nearest integer).
+
+</p><ul>
+<p>
+</p><blockquote>
+&nbsp; <img src="./Plucking a Guitar String_files/guitar-samples.png" alt="Sampling from Karplus-Strong">
+</blockquote>
+</ul>
+
+<!--
+the displacement made in the string moves at the speed of sound
+continuously in both directions and then bounces back. 
+direction and to calculate the gradual change in displacement in a discrete
+manner.<br>
+<font color=blue>Insert illustration of bump moving along string here.</font>
+-->
+
+
+<p>
+<!--
+A guitar-player can shorten the vibrating portion of a string by pressing
+the string against one of the frets.
+The guitar vibrates at a different frequency, depending on this length.
+-->
+
+
+</p><ul>
+<li><em>Plucking the string.</em>
+The excitation of the string can contain energy at any frequency.
+We simulate the excitation with <em>white noise</em>:
+set each of the <em>N</em> displacements
+to a random real number between -1/2 and +1/2.
+<!-- This represents the "initial harmonic transients found in the attack of a real guitar." -->
+
+
+<p>
+</p><blockquote>
+<img src="./Plucking a Guitar String_files/white-noise (1).png" alt="White noise">
+</blockquote>
+<p>
+
+
+</p><p></p></li><li><em>The resulting vibrations.</em>
+After the string is plucked, the string vibrates.
+The pluck causes a displacement which spreads wave-like over time.
+The Karplus-Strong algorithm simulates this vibration by maintaining
+a <em>ring buffer</em> of the <em>N</em> samples: the algorithm
+repeatedly deletes the first sample from the buffer 
+and adds to the end of the buffer the average of the first two samples,
+scaled by an <em>energy decay factor</em> of 0.994.
+
+
+<p>
+</p><blockquote>
+<img src="./Plucking a Guitar String_files/karplus-strong.png" alt="the Karplus-Strong update">
+</blockquote>
+<p>
+
+</p></li></ul>
+
+<p><b>Why it works?</b>
+The two primary components that make the Karplus-Strong algorithm
+work are the ring buffer feedback mechanism and the averaging operation.
+
+</p><ul>
+<li><em>The ring buffer feedback mechanism.</em>
+The ring buffer models the medium (a string tied down at both ends)
+in which the energy travels back and forth.
+The length of the ring buffer determines the fundamental frequency
+of the resulting sound.  Sonically, the feedback  
+mechanism reinforces only the fundamental frequency and its  
+harmonics (frequencies at integer multiples of the fundamental).  The  
+energy decay factor (.994 in this case)
+models the slight dissipation in energy as the wave makes a  
+roundtrip through the string.</li>
+
+<p></p><li><em>The averaging operation.</em>
+The averaging operation serves as a gentle <em>low-pass filter</em>
+(which removes higher frequencies while allowing lower frequencies to pass,
+hence the name).  Because it is in the path of the  
+feedback, this has the effect of gradually attenuating the higher  
+harmonics while keeping the lower ones, which corresponds closely with  
+how a plucked guitar string sounds.</li>
+
+<p></p><li><em>Some intuition.</em> A more intuitive, but somewhat less
+    precise explanation of the alogirhtm is the following.  When you
+    pluck a guitar string, the middle of the string bounces up and
+    down wildly.  Over time, the tension on the string causes the
+    string to move more regularly and more gently until it finally
+    comes to rest.  High frequency strings have greater tension, which
+    causes them to vibrate faster, but also to come to rest more
+    quickly.  Low frequency strings are looser, and vibrate longer.
+    If you think about the values in the ring buffer as positions over
+    time of a point in the middle of a string, filling the buffer with
+    random values is equivalent to the string bouncing wildly (the
+    pluck).  Averaging neighboring samples brings them closer
+    together, which means the changes between neighboring samples
+    becoming smaller and more regular.  The decay factor reduces the
+    overall amount the point moves, so that it eventually comes to
+    rest.  The final kicker is the ring buffer length.  Low notes have
+    lower frequencies, and hence longer ring buffers
+    (44,100&nbsp;/&nbsp;<em>N</em> is bigger if <em>N</em> is smaller).
+    That means it you will have to go through more random samples
+    before getting to the first round of averaged samples, and so on.
+    The result is it will take more steps for the values in the buffer
+    to become regular and to die out, modeling the longer
+    reverberation time of a low string.
+</li></ul>
+
+From a mathematical physics viewpoint, the Karplus-Strong algorithm approximately solves
+the <a href="http://en.wikipedia.org/wiki/Wave_equation">1D wave equation</a>,
+which describes the transverse motion of the string as a function of time.
+
+<!--
+At a high level, the Karplus-Strong algorithm approximately solves
+the <a href = "http://en.wikipedia.org/wiki/Wave_equation">1D wave equation</a>,
+which describes the motion of the string as a function of time.
+The wave shape spreads out over time.
+The vibration gradually eliminates those frequencies introduced by the
+pluck that don't match the string's fundamental frequency of the string,
+with the higher frequencies decaying faster than the lower ones.
+Eventually, the wave shape will be sinusoidal with frequency equal
+to the string's fundamental frequency.
+The Karplus-Strong averaging formula is an extremely simplified
+method that results in a similar effect, though it remains a bit
+of a mystery even to experts.
+-->
+<!-- The energy decay factor models the friction at the string end points. -->
+
+<p>
+</p><h2><b></b></h2><b>
+Your first task is to create a data type to model the ring buffer.
+Write a class named <tt>RingBuffer</tt> that implements the following API:
+
+<blockquote><pre>public class RingBuffer
+-----------------------------------------------------------------------------------------
+        RingBuffer(int capacity)  // create an empty ring buffer, with given max capacity
+    int size()                    // return number of items currently in the buffer
+boolean isEmpty()                 // is the buffer empty (size equals zero)?
+boolean isFull()                  // is the buffer full  (size equals capacity)?
+   void enqueue(double x)         // add item x to the end
+ double dequeue()                 // delete and return item from the front
+ double peek()                    // return (but do not delete) item from the front
+</pre></blockquote>
+
+<ul>
+<p></p><li>
+The design of your program should look like the provided
+<a href="http://www.cis.upenn.edu/~cis110/13sp/hw/hw07/RingBuffer.java">RingBuffer.java</a>,
+except that you will need to fill in all of the constructors and methods.
+
+<p></p></li><li>
+Since the ring buffer has a known maximum capacity from the argument to the constructor,
+you must implement it using a <tt>double</tt> array of that length.
+Your constructor for <tt>RingBuffer</tt> will need to allocate and initialize this array using <tt>new</tt>. Observe that you have to do this in the constructor (and not when you declare the instance variables)
+since otherwise you wouldn't know how big to make the array.
+
+<p></p></li><li>
+The instance variables are defined as follows:
+<blockquote><pre>public class RingBuffer {
+    private double[] rb;          // items in the bufer
+    private int first;            // rb[first]  = first item in the buffer
+    private int last;             // rb[last-1] = last  item in the buffer
+    private int size;             // current number of items in the buffer
+}
+</pre></blockquote>
+
+
+<p></p></li><li>
+<b>Cyclic wrap-around</b>: For efficiency, your RingBuffer must wrap
+around in the array. To do this, maintain one integer instance
+variable <tt>first</tt> that stores the index of the least recently
+inserted item; maintain a second integer instance
+variable <tt>last</tt> that stores the index one beyond the most
+recently inserted item.  To insert an item, put it at
+index <tt>last</tt> and increment <tt>last</tt>.  To remove an item,
+take it from index <tt>first</tt> and increment <tt>first</tt>. When
+either index equals <tt>capacity</tt>, make it wrap-around by changing
+the index to <tt>0</tt>. Keep in mind, the size of the RingBuffer is
+not the same as the size of the array. To get an accurate count of the
+number of elements in your RingBuffer, increment the instance variable
+size each time you call enqueue() and decrement it each time you call
+dequeue(). Here is a demonstration of how the enqueue() and dequeue()
+methods work:
+
+<ul>
+  <p></p><li><b>Initial State:</b> 
+	<blockquote>
+	  <img src="./Plucking a Guitar String_files/first-array.png" alt="Initial buffer">
+	</blockquote>
+
+  </li><li><b>enqueue(0.5)</b> 
+	<blockquote>
+	  <img src="./Plucking a Guitar String_files/enqueue-1.png" alt="enqueue-1">
+	</blockquote>
+
+  <p></p></li><li><b>enqueue(0.1)</b> 
+      <p>
+	</p><blockquote>
+	  <img src="./Plucking a Guitar String_files/enqueue-2.png" alt="enqueue-2">
+	</blockquote>
+
+  <p></p></li><li><b>dequeue()</b> 
+      <p>
+	</p><blockquote>
+	  <img src="./Plucking a Guitar String_files/dequeue.png" alt="dequeue">
+	</blockquote>
+
+
+</li></ul>
+
+
+<p></p></li><li>
+<p>Implement <tt>RingBuffer</tt> to throw an exception if the client
+attempts to <tt>dequeue()</tt> from an empty buffer
+or <tt>enqueue()</tt> into a full buffer. This will cause your program
+to crash and print a stack trace that will help you identify the bug.
+(We have included these statements in the skeleton code for you.)  The
+following is an example of how to throw an exception:
+
+</p><blockquote>
+<table border="0" cellspacing="0" bgcolor="#DDDDDD">
+<tbody><tr><td><pre>  if (isEmpty())
+    throw new RuntimeException("The ring buffer is empty.");
+</pre></td></tr>
+</tbody></table>
+</blockquote>
+
+See <a href="http://introcs.cs.princeton.edu/33design/Vector.java.html">Vector.java</a>
+for some other examples and p. 446 in the book for a slighty expanded
+explanation of exceptions..
+
+<p></p></li><li> After you fill in the methods for <tt>RingBuffer</tt>, make
+sure to test it using the given test code in <tt>main()</tt>within the
+RingBuffer skeleton code <strong>before moving on</strong>. It
+enqueues the numbers 1 through N,and then repeatedly dequeues the
+first two, and enqueues their sum.
+
+<blockquote><pre>% <b>java RingBuffer 10</b>
+Size after wrap-around is 10
+55.0
+
+
+% <b>java RingBuffer 100</b>
+Size after wrap-around is 100
+5050.0
+</pre></blockquote>
+
+
+</li></ul>
+
+<h2><b>Part II: GuitarString</b></h2>
+Next, create a data type to model a vibrating guitar string.
+Write a class named <tt>GuitarString</tt> that implements the following API:
+  
+<blockquote><pre>public class GuitarString
+------------------------------------------------------------------------------------------------------------------------
+       GuitarString(double frequency)  // create a guitar string of the given frequency, using a sampling rate of 44,100
+       GuitarString(double[] init)     // create a guitar string whose size and initial values are given by the array
+  void pluck()                         // set the buffer to white noise
+  void tic()                           // advance the simulation one time step
+double sample()                        // return the current sample
+   int time()                          // return number of tics
+</pre></blockquote>
+
+
+<ul>
+
+<p></p><li>
+Start the guitar string class with <a href="http://www.cis.upenn.edu/~cis110/13sp/hw/hw07/GuitarString.java">GuitarString.java</a>.It contains one of the private instance variables that you will need, and all of the constructors and methods ready to be filled in.
+
+
+<p></p></li><li><em>Constructors.</em>
+There are two ways to create a <tt>GuitarString</tt> object.
+
+<ul>
+
+<p></p><li> The first constructor creates a <tt>RingBuffer</tt> of the
+desired capacity <em>N</em> (<the em="">sampling rate 44,100 divided
+by <em>frequency</em>, rounded <em>up</em> to the nearest integer),
+and initializes it to represent a guitar string at rest by enqueueing
+<em>N</em> zeros.
+
+<p></p></the></li><li>
+The second constructor creates a <tt>RingBuffer</tt> of capacity equal
+to the size of the array, and initializes the 
+contents of the buffer to the values in the array.
+On this assignment, its main purpose is for debugging and grading.
+
+</li></ul>
+
+<p></p></li><li><em>Pluck.</em> Replace all <em>N</em> items in the ring buffer with 
+<em>N</em> random values between -0.5 and +0.5. To implement this, use a combination of the RingBuffer methods size(), dequeue(), and enqueue() to replace the buffer with values between -0.5 and 0.5.
+
+<p></p></li><li><em>Tic.</em> Apply the Karplus-Strong update: delete the sample at the 
+front of the ring buffer and add to the end of the ring buffer the average of the first 
+two samples, multiplied by the energy decay factor (look above). To implement this, use a combination of enqueue(), dequeue(), and peek().
+
+<p></p></li><li><em>Sample.</em> Return the value of the item at the front of the ring buffer. Use peek() to implement this.
+
+
+<p></p></li><li><em>Time.</em> Return the total number of times <tt>tic()</tt> was called.
+
+<p></p></li><li><b>Are you getting a NullPointerException? </b> Check the line number provided in the stack trace. An object you are using in this line has not been initialized correctly, and thus has the value of "null". Attempting to access variables or call functions on a null object will throw a NullPointerException.
+
+<p></p></li><li>Once you have filled in all the methods and constructors, make
+sure to test it using the given test code in <tt>main()</tt>within the
+GuitarString skeleton code <strong>before moving on</strong>.
+
+
+<blockquote><pre>% <b>java GuitarString 25</b>
+     0   0.2000
+     1   0.4000
+     2   0.5000
+     3   0.3000
+     4  -0.2000
+     5   0.4000
+     6   0.3000
+     7   0.0000
+     8  -0.1000
+     9  -0.3000
+    10   0.2982
+    11   0.4473
+    12   0.3976
+    13   0.0497
+    14   0.0994
+    15   0.3479
+    16   0.1491
+    17  -0.0497
+    18  -0.1988
+    19  -0.0009
+    20   0.3705
+    21   0.4199
+    22   0.2223
+    23   0.0741
+    24   0.2223
+</pre></blockquote>
+
+</li></ul>
+
+
+
+
+<p><b>Interactive guitar player.</b>
+<a href="http://www.cis.upenn.edu/~cis110/13sp/hw/hw07/GuitarHeroLite.java">GuitarHeroLite.java</a>
+is a sample <tt>GuitarString</tt> client
+that plays the guitar in real-time, using the
+keyboard to input notes. When the user types the lowercase
+letter <tt>'a'</tt> or <tt>'c'</tt>, the program plucks the
+corresponding string. Since the combined result of several sound waves
+is the superposition of the individual sound waves, we play the 
+sum of all string samples. After you've completed <tt>RingBuffer</tt> and <tt>GuitarString</tt>,
+run <tt>GuitarHeroLite</tt> in order to check to see if everything works properly. You should hear
+two different pitches corresponding to A and C everytime you press the key.
+
+</p><blockquote>
+<table border="0" cellspacing="0" bgcolor="#DDDDDD">
+<tbody><tr><td><pre>  public class GuitarHeroLite {
+      public static void main(String[] args) {
+
+          // create two guitar strings, for concert A and C
+          double CONCERT_A = 440.0;
+          double CONCERT_C = CONCERT_A * Math.pow(2, 3.0/12.0);  
+          GuitarString stringA = new GuitarString(CONCERT_A);
+          GuitarString stringC = new GuitarString(CONCERT_C);
+
+          while (true) {
+
+              // check if the user has typed a key; if so, process it   
+              if (StdDraw.hasNextKeyTyped()) {
+                  char key = StdDraw.nextKeyTyped();
+                  if      (key == 'a') { stringA.pluck(); }
+                  else if (key == 'c') { stringC.pluck(); }
+              }
+
+              // compute the superposition of samples
+              double sample = stringA.sample() + stringC.sample();
+  
+              // play the sample on standard audio
+              StdAudio.play(sample);
+  
+              // advance the simulation of each guitar string by one step   
+              stringA.tic();
+              stringC.tic();
+          }
+       }
+  }
+
+</pre></td></tr>
+</tbody></table>
+</blockquote>
+
+<ul>
+  <li>
+    <b>Note:</b> In order to enter keystrokes in <tt>GuitarHeroLite</tt>, make sure to first click on the standard draw window before typing the keystrokes. If you are having trouble 
+    running <tt>GuitarHeroLite</tt>, refer to the Frequently Asked Questions below.
+  </li>
+</ul>
+
+<h2><b>Part III: GuitarHero</b></h2>
+
+Write a program <tt>GuitarHero</tt> that is similar
+to <tt>GuitarHeroLite</tt>, but supports a total of 37 notes on the
+chromatic scale from 110Hz to 880Hz. In general, make
+the <em>i</em>'th character of the string below play the <em>i</em>'th
+note. 
+
+<blockquote><pre>String keyboard = "q2we4r5ty7u8i9op-[=zxdcfvgbnjmk,.;/' ";
+</pre></blockquote>
+
+<ul>
+  <li>
+    <b>Note: </b> <i>i</i> is 0 indexed. For example, <i>i</i>=2 refers to <tt>w</tt>.
+  The <em>i</em>th character of the string corresponds to a frequency of 440 × 2<sup>(<em>i</em> - 24) / 
+  12</sup>, so that the character <tt>'q'</tt> is 110Hz,  <tt>'i'</tt> is 220Hz,
+  <tt>'v'</tt> is 440Hz, and  <tt>' '</tt> is 880Hz.
+  </li>
+</ul> 
+
+This keyboard arrangement imitates a piano keyboard:
+The "white keys" are on the <tt>qwerty</tt> and <tt>zxcv</tt>
+rows and the "black keys" on the <tt>12345</tt> and <tt>asdf</tt> rows of the
+keyboard.
+
+<blockquote>
+<img src="./Plucking a Guitar String_files/keyboard.png" alt="Piano keyboard">
+</blockquote>
+
+
+<ul>
+  <p></p><li>
+      Don't even think of including 37 individual <tt>GuitarString</tt> variables
+      or a 37-way <tt>if</tt> statement!
+      Instead, create an array of 37 <tt>GuitarString</tt> objects
+      and use <tt>keyboard.indexOf(key)</tt> to figure out which key was typed.
+<p></p></li>
+<p></p><li>
+    Make sure your program does not crash if a key is played that is not one 
+    of your 37 notes.
+<p></p></li>
+<p></p><li>
+    Once you've completed <tt>GuitarHero</tt>, try playing this familiar melody.
+    <blockquote><pre>	nn//SS/ ..,,mmn //..,,m //..,,m nn//SS/ ..,,mmn   (S = space)
+    </pre></blockquote>
+<p></p></li>
+<p></p><li>
+    Type the following into your guitar to get the beginning of Led Zeppelin's 
+    <em>Stairway to Heaven</em>. Multiple notes in a column are dyads and chords.
+    <blockquote><pre>                                              w q q
+        8       u       7       y             o p p
+i p z v b z p b n z p n d [ i d z p i p z p i u i i
+    </pre></blockquote>
+  </li>
+
+
+</ul>
+
+<h2><b>Frequently Asked Questions</b></h2>
+
+<p>
+<b>I get an <tt>ArrayOutOfBounds</tt> or <tt>NullPointerException</tt> error
+in <tt>RingBuffer</tt>. What could cause this?</b>
+Does your constructor correctly initialize all of the instance variables?
+Did you allocate memory for your array?
+Did you inadvertently redeclare an instance variable
+in a method or constructor, thereby shadowing the instance variable with the
+same name?
+</p>
+
+<p>
+<b>How do I round a <tt>double</tt> to the nearest <tt>int</tt>?</b>
+See the <tt>toGray()</tt> method in
+<a href="http://introcs.cs.princeton.edu/31datatype/Luminance.java.html">Luminance.java</a>
+(Program 3.1.3).
+
+</p><p><b>
+What happens if I call <tt>StdAudio.play(x)</tt> where <tt>x</tt> is
+greater than 1 or less than -1?</b>
+The value is <em>clipped</em>—it is replaced by the value 1.0 or -1.0,
+respectively.
+</p>
+
+<p>
+<b>I get a <tt>Ring buffer underflow</tt> error in <tt>GuitarHeroLite</tt>
+before I type any keystrokes. Why?</b>
+Did you forget to initialize the ring buffer to contain <tt>N</tt> zeros
+in your <tt>GuitarString</tt> constructor?
+</p>
+
+<p>
+<b>When I run <tt>GuitarHeroLite</tt> for the first time, I hear no sound. What am 
+I doing wrong?</b> 
+Make sure you have tested with the <tt>main()</tt> provided for <tt>GuitarString</tt>.
+If that works, it is likely something wrong with <tt>pluck()</tt> since 
+the <tt>main()</tt> provided for <tt>GuitarString</tt> does not test that
+method. To diagnose the problem, print out the values of <tt>sample()</tt>
+and check that they become nonzero after you type <em>lower case</em>
+characters <tt>'a'</tt> and <tt>'c'</tt>.
+</p>
+
+<p>
+<b>When I run <tt>GuitarHeroLite</tt>, I hear static (either just one click, 
+and then silence or continual static). What am I doing wrong?
+</b>
+It's likely that <tt>pluck()</tt> is working, but <tt>tic()</tt> is 
+not. The best test is to run the <tt>main()</tt> provided for <tt>GuitarString</tt>.
+</p>
+
+<p>
+<b>How do I use <tt>keyboard.indexOf(key)</tt>?</b>
+If <tt>keyboard</tt> is a <tt>String</tt> and <tt>key</tt> is a character,
+then <tt>keyboard.indexOf(key)</tt> return the integer index of the first occurrence
+of the character <tt>key</tt> in the string <tt>keyboard</tt> (or -1 if it does
+not occur).
+</p>
+
+<p><b>Should I hardwire the constants 44,100, 110.0, 440.0, 880.0, and 37 in my program?</b>
+No, in general, we will deduct if you use an unnamed constant (such as 37)
+in your program more than once.
+We recommend using the name <tt>SAMPLING_RATE</tt> for 44,100
+and <tt>CONCERT_A</tt> for 440.
+But you need not name all of the constants in the formula 2<sup>(<em>i</em> - 24) / 12.
+</sup></p>
+
+<p><b>Do I need to follow the prescribed API?</b>
+Yes, we will be testing the methods in the API directly.
+If your method has a different signature or does not behave as specified,
+you will lose a substantial number of points.
+You may not add public methods or instance variables to the API;
+however, you may add private methods (which are only accessible in the
+class in which they are declared).  You may also add private instance
+variables for data that must be shared between methods.
+</p>
+
+<p></p><h2><b>Extra credit 1.</b></h2>
+Write a program <tt>GuitarHeroVisualizer.java</tt>
+(by modifying <tt>GuitarHero.java</tt>)
+that plots the sound wave in real-time, as the user is playing the
+keyboard guitar. The output should look something like this, but
+change over time.
+
+<blockquote>
+&nbsp; <img src="./Plucking a Guitar String_files/guitar-samples.png" alt="Sampling from Karplus-Strong">
+</blockquote>
+
+You should not redraw the wave on every sample.  Instead, draw the
+wave of the last <i>n</i> samples every <i>n</i> timesteps for an
+appropriate value of <i>n</i>.  Experiment with different values
+of <i>n</i> to find one that you think looks good and draws smoothly.
+There is more than one way to handle the drawing — there is not
+a "right" way to do this.  You may also do a different visualization,
+as long as it is tied to the audio samples.
+
+<!--
+Submit your client program <tt>GuitarHeroVisualizer.java</tt>.  We will run it with our 
+<tt>RingBuffer</tt> and <tt>GuitarString</tt> classes.  
+-->
+
+<p></p><h2><b>Extra credit 2.</b></h2>
+Bring your laptop to recitation and perform a piece for your classmates.
+
+
+<p></p><h2><b>Challenge for the bored.</b></h2>  Modify the Karplus-Strong
+algorithm to synthesize a different instrument.  Consider changing the
+excitation of the string (from white-noise to something more
+structured) or changing the averaging formula (from the average of the
+first two samples to a more complicated rule) or anything else you
+might imagine.  This is a challenge for the bored, so you will not
+receive extra credit for it.  But you may use it as the basis for you
+visualizer and/or your performance in class.
+
+Alexander Strong suggests a few simple variants you can try:
+<ul>
+  <li><em>Stretched tuning:</em> The frequency formula in the
+    assignment uses "perfect tuning" the doesn't sound equally good in
+    every key.  Instead, most musicians use stretched tuning that
+    equalizes the distortions across all keys.  To get stretched
+    tuning, using the
+    formula <em>f</em>&nbsp;=&nbsp;440&nbsp;×&nbsp;1.05956<sup><em>i</em>&nbsp;-&nbsp;24</sup>.
+    Try experimenting a bit with the base of the exponent to see what
+    sounds best.</li>
+  <li><em>Extra notes:</em> Add additional keys to your keyboard
+    string to play additional notes (higher or lower).  Higher notes
+    especially will benefit from stretched tuning.  You will need to
+    update the 24 in your frequency formula to change the frequency of
+    the lowest note.</li>
+  <li><em>Better decay factors:</em> Make the decay factor dependent
+    on the string frequency.  Lower notes should have a higher decay
+    factor; higher notes should have a smaller decay.  Try different
+    formulas and see what sounds best.</li>
+  <li><em>Harp strings:</em> Flipping the sign of the new value before
+    enqueing it in <tt>tick()</tt> will change the sound from
+    guitar-like to harp-like.  You may want to play with the decay
+    factors and note frequencies to improve the realism.</li>
+  <li><em>Drums:</em> Randomly flipping (with probability 0.5) the
+    sign of the new value before enqueing it in <tt>tick()</tt> will
+    produce a drum sound.  You will need lower frequencies for the
+    drums than for the guitar and harp, and will want to use a decay
+    factor of 1.0 (no decay).  The note frequencies for the drums
+    should also be spaced further apart.</li>
+  <li><em>Mix and match:</em> Assign some keyboard keys to drums,
+    others to guitar, and still others to harp (or any other
+    instruments you invent) so you can play an ensemble.</li>
+</ul>
+    
+<p></p><h2><b>Enrichment.</b></h2>
+<ul>
+  <li><em>ChucK</em>. <a href="http://chuck.cs.princeton.edu/">ChucK</a> as specialized
+    programming language for real-time synthesis, composition, and
+    performance originated by <a href="https://ccrma.stanford.edu/~ge">Ge Wang</a> and <a href="http://www.cs.princeton.edu/~prc/">Perry Cook</a> at Princeton
+    University.  Here's the <a href="http://chuck.cs.princeton.edu/doc/examples/deep/plu.ck">
+    Karplus-Strong algorithm in ChucK</a>.</li>
+
+    <p></p><li><em>Slide flute.</em> Here's a description of a physically
+        modeled <a href="http://ccrma.stanford.edu/software/clm/compmus/clm-tutorials/pm.html">
+        slide flute</a> by Perry Cook.
+</li></ul>
+
+<br><br><br>
+
+<address><small>
+This assignment was developed by Andrew Appel, Jeff Bernstein,
+Maia Ginsburg, Ken Steiglitz, Ge Wang, and Kevin Wayne.
+<br>Copyright © 2005
+</small>
+</address>
+
+
+</b></body></html>

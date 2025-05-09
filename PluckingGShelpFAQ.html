@@ -1,0 +1,330 @@
+
+<!-- saved from url=(0116)file:///C:/Users/VCowal/Downloads/Programming%20Assignment%20Checklist%20%20Plucking%20a%20Guitar%20String%20(1).htm -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>
+Programming Assignment Checklist: Plucking a Guitar String
+</title>
+</head>
+
+<body>
+<h3>
+Programming Assignment Checklist: Plucking a Guitar String 
+</h3>
+
+<p></p><p>
+
+<table border="0" cellpadding="2" cellspacing="0" width="100%">
+<tbody><tr>
+<td align="center" bgcolor="000000">
+<font size="+0" face="helvetica" color="ffffff">
+Frequently Asked Questions
+</font></td></tr></tbody></table>
+
+</p><p><b>What are the goals of this assignment?</b>
+To learn how to create user-defined data types in Java
+and to learn about digital audio.
+
+</p><p><b>Where do I enter keystrokes in GuitarHeroLite and GuitarHero?</b>
+Be sure that the standard draw window has focus by clicking in it.
+Then, type the keystrokes.
+
+</p><p><b>How do I determine how many elements are in an array?</b>
+If you're asking this, you probably need to review Section 1.4.
+
+</p><p><b>What is <tt>StdOut.printf()</tt>?</b>
+It's for formatted printing - see p. 124 in the textbook.
+You aren't required to use it, but it's useful here to
+align text output in columns and limit the number of digits 
+of precision displayed.
+
+</p><p><b>Is the size of a <tt>RingBuffer</tt> equal to the number 
+of nonzeros?</b>
+No. Some of the elements in the buffer can be zero.
+To get an accurate count, increment the instance variable <tt>size</tt>
+each time you call <tt>enqueue()</tt> and decrement it each
+time you call <tt>dequeue()</tt>.
+
+
+
+</p><p><b>
+What should  <tt>RingBuffer</tt> do if the client attempts to <tt>dequeue()</tt> from
+an empty buffer or <tt>enqueue()</tt> into a full buffer?</b>
+We recommend <em>throwing an exception</em> to indicate the error.
+As an example, see <a href="http://www.cs.princeton.edu/introcs/33design/Vector.java.html">Vector.java</a>.
+
+
+</p><p>
+</p><p><b>
+What happens if I send a sample whose value is greater than 1 or less than -1
+to <tt>StdAudio</tt>?</b>
+The value is <em>clipped</em> - it is replaced by the value 1.0 or -1.0,
+respectively.
+
+</p><p>
+<b>I get an <tt>ArrayOutOfBounds</tt> or <tt>NullPointerException</tt> error
+in <tt>RingBuffer</tt>. What could cause this?</b>
+Does your constructor correctly initialize all of the instance variables
+(<tt>first</tt>, <tt>last</tt>, <tt>size</tt>, and <tt>buffer[]</tt>)?
+Did you allocate memory for your array with <tt>new</tt>?
+Did you inadvertently redeclare <tt>int first</tt> or <tt>double[] buffer</tt>
+in a method or constructor, thereby shadowing the instance variable with the
+same name?
+
+</p><p>
+<b>I get a <tt>Ring buffer underflow</tt> error in <tt>GuitarHeroLite</tt>
+before I type any keystrokes. Why?</b>
+Did you forget to initialize the ring buffer to contain <tt>N</tt> zeros
+in your <tt>GuitarString</tt> constructor?
+
+
+</p><p>
+<b>When I run <tt>GuitarHeroLite</tt> for the first time, I hear no sound. What am 
+I doing wrong?</b> 
+Make sure you have tested with the <tt>main()</tt> provided for <tt>GuitarString</tt>.
+If that works, it is likely something wrong with <tt>pluck()</tt> since 
+the <tt>main()</tt> provided for <tt>GuitarString</tt> does not test that
+method. To diagnose the problem, print out the values of <tt>sample()</tt>
+and check that they become nonzero after you type <em>upper case</em>
+characters <tt>'A'</tt> and <tt>'C'</tt>.
+
+</p><p>
+<b>When I run <tt>GuitarHeroLite</tt>, I hear static (either just one click, 
+and then silence or continual static). What am I doing wrong?
+</b>
+It's likely that <tt>pluck()</tt> is working, but <tt>tic()</tt> is 
+not. The best test is to run the <tt>main()</tt> provided for <tt>GuitarString</tt>.
+
+
+</p><p>
+<b>How do I use <tt>keyboard.indexOf(key)</tt>?</b>
+If <tt>keyboard</tt> is a <tt>String</tt> and <tt>key</tt> is a character,
+then <tt>keyboard.indexOf(key)</tt> return the integer index of the first occurrence
+of the character <tt>key</tt> in the string <tt>keyboard</tt> (or -1 if it does
+not occur).
+
+</p><p>
+
+<table border="0" cellpadding="2" cellspacing="0" width="100%">
+<tbody><tr>
+<td align="center" bgcolor="000000">
+<font size="+0" face="helvetica" color="ffffff">
+Testing
+</font></td></tr></tbody></table>
+
+</p><p>
+Be sure to thoroughly test each piece of your code as you write it.
+We offer some suggestions below.
+
+</p><ul>
+<p></p><li><em>Ring buffer.</em>
+You can test your <tt>RingBuffer</tt> data type on the following 
+toy client, using the <tt>main()</tt> provided. 
+It enqueues the numbers 1 through N,
+and then repeatedly dequeues the first two, and enqueues their sum.
+
+<blockquote>
+<table border="0" cellspacing="0" bgcolor="#DDDDDD">
+<tbody><tr><td><pre>  public static void main(String[] args) {
+      int N = Integer.parseInt(args[0]);
+      RingBuffer buffer = new RingBuffer(N);  
+      for (int i = 1; i &lt;= N; i++) {
+          buffer.enqueue(i);
+      }
+      double t = buffer.dequeue();
+      buffer.enqueue(t);
+      System.out.println("Size after wrap-around is " + buffer.size());
+      while (buffer.size() &gt;= 2) {
+          double x = buffer.dequeue();
+          double y = buffer.dequeue();
+          buffer.enqueue(x + y);
+      }
+      System.out.println(buffer.peek());
+  }
+
+</pre></td></tr>
+</tbody></table>
+</blockquote>
+
+<blockquote><pre>% java RingBuffer 10
+Size after wrap-around is 10
+55.0
+
+
+% java RingBuffer 100
+Size after wrap-around is 100
+5050.0
+</pre></blockquote>
+
+
+<p></p></li><li><em>Guitar string.</em>
+You can test your <tt>GuitarString</tt> data type with the following
+toy client, using the <tt>main()</tt> provided.
+
+
+
+<blockquote>
+<table border="0" cellspacing="0" bgcolor="#DDDDDD">
+<tbody><tr><td><pre>  public static void main(String[] args) {
+      int N = Integer.parseInt(args[0]);
+      double[] samples = { .2, .4, .5, .3, -.2, .4, .3, .0, -.1, -.3 };  
+      GuitarString testString = new GuitarString(samples);
+      for (int i = 0; i &lt; N; i++) {
+          int t = testString.time();
+          double sample = testString.sample();
+          System.out.printf("%6d %8.4f\n", t, sample);
+          testString.tic();
+      }
+  }
+
+</pre></td></tr>
+</tbody></table>
+</blockquote>
+
+<blockquote><pre>% java GuitarString 25
+     0   0.2000
+     1   0.4000
+     2   0.5000
+     3   0.3000
+     4  -0.2000
+     5   0.4000
+     6   0.3000
+     7   0.0000
+     8  -0.1000
+     9  -0.3000
+    10   0.2988
+    11   0.4482
+    12   0.3984
+    13   0.0498
+    14   0.0996
+    15   0.3486
+    16   0.1494
+    17  -0.0498
+    18  -0.1992
+    19  -0.0006
+    20   0.3720
+    21   0.4216
+    22   0.2232
+    23   0.0744
+    24   0.2232
+</pre></blockquote>
+
+
+<p></p></li><li><em>Guitar Hero.</em>
+Type the following into your guitar to get the beginning
+of Led Zeppelin's <em>Stairway to Heaven</em>.
+
+<blockquote><pre>e y p g j p y j k p y k s i e s p y e y p y e q e e
+</pre></blockquote>
+
+What is this familiar melody?
+
+<blockquote><pre>kknn,,n vvcczzk nnvvccz nnvvccz kknn,,n vvcczzk
+</pre></blockquote>
+
+
+</li></ul>
+
+
+<p>
+
+<p>
+
+</p><table border="0" cellpadding="2" cellspacing="0" width="100%">
+<tbody><tr>
+</tr></tbody></table><table border="0" cellpadding="2" cellspacing="0" width="100%">
+<tbody><tr>
+<td align="center" bgcolor="000000">
+<font size="+0" face="helvetica" color="ffffff">
+Possible Progress Steps
+</font></td></tr></tbody></table>
+</p><p>
+
+These are purely suggestions for how you might make progress.  You do
+not have to follow these steps.
+
+</p><ul><li>
+We recommend defining the instance variables as follows:
+<blockquote><pre>public class RingBuffer {
+    private int first;            // index of first item in buffer
+    private int last;             // index of last item in buffer
+    private int size;             // current number of items of buffer
+    private double[] buffer; 
+}
+</pre></blockquote>
+
+<p></p></li><li>
+Your constructor for <tt>RingBuffer</tt> will need to allocate and initialize
+an array of <tt>double</tt> using <tt>new</tt>. Observe that you have to
+do this in the constructor (and not when you declare the instance variables)
+since otherwise you wouldn't know how big to make the array.
+
+<p></p></li><li>
+After you fill in the methods for <tt>RingBuffer</tt>, your first test should be to 
+run it using the given test code in <tt>main()</tt>. 
+
+
+<p></p></li><li>
+To implement <tt>pluck()</tt>, use a combination of
+the <tt>RingBuffer</tt> methods <tt>size()</tt>, <tt>dequeue()</tt>, and
+<tt>enqueue()</tt> to replace the buffer with values between -0.5 and 0.5.
+ 
+<p></p></li><li>To implement <tt>tic()</tt>, 
+use a combination of <tt>enqueue()</tt>, <tt>dequeue()</tt>, and <tt>peek()</tt>.
+    
+<p></p></li><li>To implement <tt>sample()</tt>, use <tt>peek()</tt>.
+
+<p></p></li><li>
+When you have  <tt>GuitarString.java</tt> working, change the program 
+<tt>GuitarHeroLite.java</tt> to <tt>GuitarHero.java</tt>, 
+by creating an array of notes.
+
+</li></ul>
+
+
+
+
+<table border="0" cellpadding="2" cellspacing="0" width="100%">
+<tbody><tr>
+<td align="center" bgcolor="000000">
+<font size="+0" face="helvetica" color="ffffff">
+Enrichment
+</font></td></tr></tbody></table>
+<p>
+
+</p><ul>
+
+<p></p><li><em>ChucK</em>. 
+<a href="http://chuck.cs.princeton.edu/">ChucK</a> as specialized
+programming language for real-time synthesis, composition, and performance
+originated by <a href="http://www.cs.princeton.edu/~gewang/">Ge Wang</a>
+and <a href="http://www.cs.princeton.edu/~prc/">Perry Cook</a>
+at Princeton University.
+Here's the <a href="http://chuck.cs.princeton.edu/doc/examples/deep/plu.ck">
+Karplus-Strong algorithm in ChucK</a>.
+
+<p></p></li><li><em>Slide flute.</em>
+Here's a description of a physically modeled
+<a href="http://ccrma.stanford.edu/software/clm/compmus/clm-tutorials/pm.html">
+slide flute</a> by Perry Cook.
+
+<p></p></li><li><em>Electric guitar synthesis.</em>
+Sullivan extended the Karplus-Strong algorithm to synthesize
+electric guitar tmbres with distortion and feedback.
+Here's a <a href="http://www.music.mcgill.ca/~eustace/mumt_614/614_project/Eustace06ksguitar.pdf">
+paper</a> that describes it.
+
+<p></p></li><li><em>Physically modeled sound.</em>
+Here's an <a href="http://usonia.unco.edu/musictech/pdf/PhysicalModeling.pdf">article</a>
+explaining some of the differences between physically modeled sound and
+more "traditional" approaches including analog synthesis, FM synthesis, and sampling.
+
+</li></ul>
+
+
+
+<p> </p><hr>
+
+
+
+
+</body></html>
