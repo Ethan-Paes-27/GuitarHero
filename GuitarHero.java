@@ -4,18 +4,30 @@ public class GuitarHero {
 
     public GuitarHero() {
         strings = new GuitarString[37];
-
+        
         for (int i = 0; i < 37; i++) {
-            strings[i] = new GuitarString(440 * Math.pow(2, i - 24) / 12); // 440 × 2^(i - 24) / 12
+            strings[i] = new GuitarString(440.0 * Math.pow(2, (i - 24) / 12.0)); // 440 × 2^((i - 24) / 12)
         }
     }
 
-    public double play(int index) {
+    public void play(int index) {
         strings[index].pluck();
-        double sample = strings[index].sample();
-        strings[index].tic();
+    }
+
+    public double allSamples(int index) {
+        double sample = 0.0;
+
+        for (GuitarString string : strings) {
+            sample += string.sample();
+        }
 
         return sample;
+    }
+
+    public void ticAll() {
+        for (GuitarString string : strings) {
+            string.tic();
+        }
     }
 
     public static void main(String[] args) {
@@ -32,17 +44,21 @@ public class GuitarHero {
                 char key = StdDraw.nextKeyTyped();
 
                 index = keyboard.indexOf(key);
-            }
+                
+                if (index == -1) {
+                    continue;
+                }
 
-            if (index == -1) {
-                continue;
+                guitarHero.play(index);
             }
 
             // compute the superposition of the samples
-            double sample = guitarHero.play(index);
-
+            double sample = guitarHero.allSamples(index);
             // send the result to standard audio
             StdAudio.play(sample);
+
+            // tic all strings
+            guitarHero.ticAll();
         }
     }
 }
