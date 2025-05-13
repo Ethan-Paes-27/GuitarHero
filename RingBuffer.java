@@ -13,8 +13,6 @@ import java.util.ArrayList;
 
 public class RingBuffer {
     private ArrayList<Double> rb;          // items in the buffer
-    private int first;            // index for the next dequeue or peek
-    private int last;             // index for the next enqueue
     private int maxCap;             // number of items in the buffer
 
     // create an empty buffer, with given max capacity
