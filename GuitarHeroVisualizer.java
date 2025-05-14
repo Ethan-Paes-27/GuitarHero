@@ -38,6 +38,7 @@ public class GuitarHeroVisualizer {
         ArrayList<Double> lastSamples = new ArrayList<>();
         boolean isKeyPressed = false;
         int timer = 0;
+        int ticksSinceLastPlay = 0;
 
         // the main input loop
         while (true) {
@@ -57,12 +58,14 @@ public class GuitarHeroVisualizer {
 
             // compute the superposition of the samples
             double sample = guitarHeroVisualizer.allSamples(index);
+
             // send the result to standard audio
             StdAudio.play(sample);
 
-            if (isKeyPressed || timer++ == 5000) {
+            if (ticksSinceLastPlay++ > 1500 && (isKeyPressed || timer++ == 5000)) {
                 timer = 0;
                 isKeyPressed = false;
+                ticksSinceLastPlay = 0;
                 StdDraw.clear();
 
                 if (lastSamples.size() > 25) {
