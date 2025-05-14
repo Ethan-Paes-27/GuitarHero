@@ -72,6 +72,8 @@ public class GuitarHeroVisualizer {
                     lastSamples.remove(0);
                 }
 
+                StdDraw.line(0, 0.5, 1, 0.5);
+
                 lastSamples.add(sample);
 
                 double y = lastSamples.get(0);
