@@ -1,10 +1,10 @@
 public class GuitarHero {
     private GuitarString[] strings;
-    public static final String keyboard = "q2we4r5ty7u8i9op-[=zxdcfvgbnjmk,.;/' ";
+    public static final String keyboard = "q2we4r5ty7u8i9op-[=zxdcfvgbnjmk,.;/' "; // z is E
 
     public GuitarHero() {
         strings = new GuitarString[37];
-        
+
         for (int i = 0; i < 37; i++) {
             strings[i] = new GuitarString(440.0 * Math.pow(2, (i - 24) / 12.0)); // 440 × 2^((i - 24) / 12)
         }
@@ -44,12 +44,10 @@ public class GuitarHero {
                 char key = StdDraw.nextKeyTyped();
 
                 index = keyboard.indexOf(key);
-                
-                if (index == -1) {
-                    continue;
-                }
 
-                guitarHero.play(index);
+                if (index != -1) {
+                    guitarHero.play(index);
+                }
             }
 
             // compute the superposition of the samples
